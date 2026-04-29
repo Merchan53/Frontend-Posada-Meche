@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  /* 🎨 COLORES PRINCIPALES */
+  --color-primary: #e72d8d;     /* rosado principal */
+  --color-primary-soft: #eba3c9;
+  --color-dark: #1f2937;
+  --color-Mygray: #2e3847;
+  --color-light:#ebe9eb;
+
+  /* 📝 TIPOGRAFÍA */
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Playfair Display', serif;
+
+  /* 📐 RADIOS */
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+
+  /* 🌫 SOMBRAS */
+  --shadow-card: 0 10px 25px rgba(0,0,0,0.1);
+}
