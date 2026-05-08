@@ -6,15 +6,12 @@ import { IoMdMenu } from "react-icons/io";
 import { NAVLINKS } from "../../constants/navigation";
 
 const Header = () => {
- 
-
   const [isOpen, setIsOpen] = useState(false); // Por defecto cerrado
   const toogleMenuMb = () => setIsOpen(!isOpen);
 
   return (
     // 1. Quitamos h-20 y usamos min-h. Usamos flex-col para el crecimiento vertical.
     <header className="min-h-20 bg-light w-full transition-all duration-300 flex flex-col justify-center">
-      
       {/** Fila Superior: Logo y Botón */}
       <div className="mx-auto w-full px-6 py-4">
         <div className="flex justify-between items-center">
@@ -28,17 +25,22 @@ const Header = () => {
           <div className="gap-4 hidden md:flex items-center">
             <nav className="flex gap-4 text-Mygray font-medium">
               {NAVLINKS.map((item, index) => (
-                <Link to={item.to} key={index} className="hover:text-primary">{item.name}</Link>
+                <Link to={item.to} key={index} className="hover:text-primary">
+                  {item.name}
+                </Link>
               ))}
             </nav>
-            <button className="bg-linear-to-r from-primary to-orange-400 h-9 px-6 rounded-2xl text-white text-sm font-medium cursor-pointer">
+            <button className="h-9 px-6 rounded-2xl text-sm cursor-pointer bg-linear-to-r from-primary to-orange-400 text-white font-medium">
               Reservar Ahora
             </button>
           </div>
 
           {/** Botón Hamburguesa */}
           <div className="md:hidden">
-            <IoMdMenu onClick={toogleMenuMb} className="h-9 w-9 text-primary cursor-pointer" />
+            <IoMdMenu
+              onClick={toogleMenuMb}
+              className="h-9 w-9 text-primary cursor-pointer"
+            />
           </div>
         </div>
       </div>

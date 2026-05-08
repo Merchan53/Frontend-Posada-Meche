@@ -1,6 +1,6 @@
 export const NAVLINKS = [
-    { name: "Nosotros", to: "/nosotros" },
-    { name: "Habitaciones", to: "/habitaciones" },
-    { name: "Servicios", to: "/servicios" },
+    { name: "Nosotros", to: "/about" },
+    { name: "Habitaciones", to: "/rooms" },
+    { name: "Servicios", to: "/services" },
 ];
 

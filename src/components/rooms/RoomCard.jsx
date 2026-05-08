@@ -3,7 +3,7 @@ const RoomCard = ({ habitacion, index }) => {
   const {
     name = "Habitacion sin nombre",
     description = "Descripcion habitacion",
-    img = { url: "/habitacion.jpg", alt: "Habitacion Alt" },
+    img = { url: "/room.jpg", alt: "Habitacion Alt" },
     services = [],
     price = 0,
   } = habitacion || {};
