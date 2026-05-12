@@ -14,7 +14,7 @@ const RoomCard = ({ habitacion, index }) => {
     minimumFractionDigits: 0,
   }).format(price);
 
-  console.log(formattedPrice);
+ 
 
   return (
     <motion.div
