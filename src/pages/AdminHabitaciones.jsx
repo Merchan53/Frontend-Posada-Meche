@@ -1,136 +1,134 @@
-// src/pages/AdminHabitaciones.jsx
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ROOMS } from '../constants/rooms';
-import { RiLockLine, RiCheckboxCircleLine, RiCloseCircleLine } from 'react-icons/ri';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { RiEditLine, RiRefreshLine, RiUserLine } from 'react-icons/ri';
+import { habitacionService } from '../services/api/habitacionService';
+import HabitacionForm from '../components/layout/HabitacionForm';
 
 const AdminHabitaciones = () => {
-  const [rooms, setRooms] = useState(
-    ROOMS.map((room) => ({
-      ...room,
-      bloqueos: [], // fechas bloqueadas { inicio, fin }
-      activa: true, // true: disponible, false: en mantenimiento
-    }))
-  );
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState(null);
 
-  const [bloqueoForm, setBloqueoForm] = useState({ roomId: null, inicio: '', fin: '' });
-
-  const toggleActiva = (id) => {
-    setRooms(rooms.map((r) => (r.id === id ? { ...r, activa: !r.activa } : r)));
+  const fetchRooms = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await habitacionService.getAll();
+      setRooms(data);
+    } catch (err) {
+      console.error('Error al obtener habitaciones:', err);
+      setError('No se pudieron cargar las habitaciones.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const addBloqueo = () => {
-    if (bloqueoForm.inicio && bloqueoForm.fin && bloqueoForm.roomId) {
-      setRooms(
-        rooms.map((r) =>
-          r.id === bloqueoForm.roomId
-            ? { ...r, bloqueos: [...r.bloqueos, { inicio: bloqueoForm.inicio, fin: bloqueoForm.fin }] }
-            : r
-        )
-      );
-      setBloqueoForm({ roomId: null, inicio: '', fin: '' });
+  useEffect(() => {
+    fetchRooms();
+  }, []);
+
+  const handleEdit = (room) => {
+    setSelectedRoom(room);
+    setModalOpen(true);
+  };
+
+  const handleSaveSubmit = async (formData) => {
+    try {
+      await habitacionService.update(selectedRoom.id_habitacion, formData);
+      setModalOpen(false);
+      setSelectedRoom(null);
+      fetchRooms();
+    } catch (err) {
+      console.error('Error al actualizar habitación:', err);
+      alert('Error al actualizar los datos de la habitación');
     }
   };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Gestión de Habitaciones</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {rooms.map((room) => (
-          <motion.div
-            key={room.id}
-            layout
-            className="bg-white rounded-2xl shadow-sm border p-5 flex flex-col"
-          >
-            <img
-              src={room.img.url}
-              alt={room.name}
-              className="w-full h-40 object-cover rounded-xl mb-4"
-            />
-            <h3 className="text-lg font-bold">{room.name}</h3>
-            <p className="text-sm text-gray-500">{room.tipo}</p>
-            <div className="flex items-center gap-2 mt-2">
-              <span
-                className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                  room.activa ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                }`}
-              >
-                {room.activa ? 'Activa' : 'Mantenimiento'}
-              </span>
-              <span className="text-xs text-gray-400">${room.price.toLocaleString()} / noche</span>
-            </div>
-
-            {/* Bloqueos */}
-            <div className="mt-3">
-              <h4 className="text-sm font-medium mb-1">Bloqueos temporales:</h4>
-              {room.bloqueos.length === 0 ? (
-                <p className="text-xs text-gray-400">Sin bloqueos</p>
-              ) : (
-                <ul className="text-xs space-y-1">
-                  {room.bloqueos.map((b, i) => (
-                    <li key={i} className="text-red-600">
-                      {b.inicio} → {b.fin}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div className="mt-4 flex gap-2 text-sm">
-              <button
-                onClick={() => toggleActiva(room.id)}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg ${
-                  room.activa ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
-                }`}
-              >
-                {room.activa ? <RiCloseCircleLine /> : <RiCheckboxCircleLine />}
-                {room.activa ? 'Desactivar' : 'Activar'}
-              </button>
-              <button
-                onClick={() => setBloqueoForm({ ...bloqueoForm, roomId: room.id })}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700"
-              >
-                <RiLockLine /> Bloquear
-              </button>
-            </div>
-          </motion.div>
-        ))}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold">Gestión de Habitaciones</h1>
+          <p className="text-sm text-gray-500">Configura precios, nombres y capacidad de las habitaciones</p>
+        </div>
+        <button
+          onClick={fetchRooms}
+          className="p-2 border rounded-xl hover:bg-gray-100 text-gray-600 transition"
+          title="Recargar habitaciones"
+        >
+          <RiRefreshLine size={20} />
+        </button>
       </div>
 
-      {/* Modal rápido para agregar bloqueo */}
-      {bloqueoForm.roomId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-80">
-            <h3 className="font-bold mb-3">Agregar Bloqueo</h3>
-            <input
-              type="date"
-              value={bloqueoForm.inicio}
-              onChange={(e) => setBloqueoForm({ ...bloqueoForm, inicio: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 mb-2"
-              placeholder="Inicio"
-            />
-            <input
-              type="date"
-              value={bloqueoForm.fin}
-              onChange={(e) => setBloqueoForm({ ...bloqueoForm, fin: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 mb-4"
-              placeholder="Fin"
-            />
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setBloqueoForm({ roomId: null, inicio: '', fin: '' })}
-                className="px-4 py-2 text-gray-600"
-              >
-                Cancelar
-              </button>
-              <button onClick={addBloqueo} className="px-4 py-2 bg-primary text-white rounded-lg">
-                Guardar
-              </button>
-            </div>
-          </div>
+      {loading ? (
+        <div className="bg-white rounded-2xl p-8 text-center text-gray-500 border shadow-sm">
+          Cargando habitaciones...
+        </div>
+      ) : error ? (
+        <div className="bg-red-50 text-red-600 rounded-2xl p-6 text-center border border-red-200">
+          {error}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {rooms.map((room) => (
+            <motion.div
+              key={room.id_habitacion}
+              layout
+              className="bg-white rounded-2xl shadow-sm border p-5 flex flex-col justify-between"
+            >
+              <div>
+                <img
+                  src={room.img.url}
+                  alt={room.nombre}
+                  className="w-full h-40 object-cover rounded-xl mb-4"
+                />
+                <div className="flex justify-between items-start">
+                  <h3 className="text-lg font-bold">{room.nombre}</h3>
+                  <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-blue-50 text-blue-700">
+                    {room.tipo}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">{room.descripcion}</p>
+
+                <div className="flex items-center gap-4 mt-3 text-xs text-gray-600">
+                  <span className="flex items-center gap-1 bg-gray-100 px-2.5 py-1 rounded-lg">
+                    <RiUserLine size={14} /> Capacidad: {room.capacidad} pers.
+                  </span>
+                  <span className="font-bold text-primary text-sm">
+                    ${room.price.toLocaleString()} / día
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-5 pt-3 border-t flex justify-end">
+                <button
+                  onClick={() => handleEdit(room)}
+                  className="flex items-center gap-1 px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-medium text-sm hover:bg-primary hover:text-white transition-colors"
+                >
+                  <RiEditLine size={16} /> Editar
+                </button>
+              </div>
+            </motion.div>
+          ))}
         </div>
       )}
+
+      {/* Al pasar la prop key, React destruye y crea el formulario con los nuevos valores de selectedRoom */}
+      <AnimatePresence>
+        {modalOpen && selectedRoom && (
+          <HabitacionForm
+            key={selectedRoom.id_habitacion}
+            onClose={() => {
+              setModalOpen(false);
+              setSelectedRoom(null);
+            }}
+            onSubmit={handleSaveSubmit}
+            initialData={selectedRoom}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

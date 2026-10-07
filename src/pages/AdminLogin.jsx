@@ -11,19 +11,20 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { login } = useAdminStore();
+  const { login , loading} = useAdminStore();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    const success = login({ email, password });
-    if (success) {
+
+    const result = await login({ email, password });
+
+    if (result.success) {
       navigate('/admin/dashboard');
     } else {
-      setError('Credenciales inválidas');
+      setError(result.message); // Mostramos el error real del backend
     }
   };
-
   return (
     <div className="min-h-screen flex">
       {/* Panel izquierdo - Branding */}
@@ -100,13 +101,16 @@ const AdminLogin = () => {
             </div>
 
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              className="w-full py-3.5 bg-linear-to-r from-primary to-orange-400 text-white font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl transition-shadow"
-            >
-              Ingresar al Panel
-            </motion.button>
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      type="submit"
+      disabled={loading} // Deshabilitar si está cargando
+      className={`w-full py-3.5 bg-linear-to-r from-primary to-orange-400 text-white font-semibold rounded-xl shadow-lg transition-all ${
+        loading ? 'opacity-70 cursor-not-allowed' : ''
+      }`}
+    >
+      {loading ? 'Ingresando...' : 'Ingresar al Panel'}
+    </motion.button>
           </form>
 
           <p className="mt-8 text-center text-sm text-gray-400">
